@@ -7,9 +7,10 @@ on:
 #    job-environment:
 #        type: string
 #        required: true
-#    repo:
-#      type: string
-#      required: true
+    repo:
+      type: string
+      required: true
+      default: '$GITHUB_REPOSITORY_OWNER'
     image:
       type: string
       required: false
@@ -60,7 +61,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v3
       with:
-          images:  ghcr.io/${{ GITHUB_REPOSITORY_OWNER }}/${{ inputs.image }}
+          images:  ghcr.io/${{ inputs.repo }}/${{ inputs.image }}
 
 
     - name: 'Get package version and name'
@@ -81,7 +82,7 @@ jobs:
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
-              ghcr.io/${{ GITHUB_REPOSITORY_OWNER }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
+              ghcr.io/${{ inputs.repo }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
           build-args: | 
                   SFPOWERSCRIPTS_VERSION=${{ env.PKG_VERSION }}
                   GIT_COMMIT=${{ github.sha }}
@@ -91,7 +92,7 @@ jobs:
     - name: 'Tag Docker'
       uses: ./.github/actions/tagDocker
       with:
-         repo: ${{ GITHUB_REPOSITORY_OWNER }}
+         repo: ${{ inputs.repo }}
          image: ${{ inputs.image }}
          existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
          new-tag: ${{ github.ref_name }}
@@ -104,7 +105,7 @@ jobs:
     - name: 'Tag Docker'
       uses: ./.github/actions/tagDocker
       with:
-         repo: ${{ GITHUB_REPOSITORY_OWNER }}
+         repo: ${{ inputs.repo }}
          image: ${{ inputs.image }}
          existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
          new-tag:  ${{ env.RELEASE_NAME }}
