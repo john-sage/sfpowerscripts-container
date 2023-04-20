@@ -2,36 +2,42 @@ name: Build and Publish sfpowerscripts Docker Image to ghcr
 
 
 on:
-  workflow_call:
+  workflow_dispatch:
    inputs:
-    job-environment:
-        type: string
-        required: true
-    repo:
-      type: string
-      required: true
+#    job-environment:
+#        type: string
+#        required: true
+#    repo:
+#      type: string
+#      required: true
     image:
       type: string
       required: false
-      default: sfpowerscripts
+      default: sfdxcli
     suffix-tag:
-      type: string
+      type: choice
+      description: Choose tag
       required: true
-   secrets:
-      username:
-          required: true
-      token:
-          required: true
+      options: 
+      - latest
+      - test
+      - beta
+#   secrets:
+#      username:
+#          required: true
+#      token:
+#          required: true
 
 jobs:
 
   build:
     name: 'build docker image'
-    environment: ${{ inputs.job-environment }}
+#    environment: ${{ inputs.job-environment }}
     runs-on: ubuntu-latest
     steps:
 
-    - uses: actions/checkout@v2
+    - name: "Build:checkout"
+      uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
@@ -44,8 +50,8 @@ jobs:
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
-        username: ${{ secrets.username }}
-        password: ${{ secrets.token }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
 
     # Extract metadata (tags, labels) for Docker
@@ -54,7 +60,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v3
       with:
-          images:  ghcr.io/${{ inputs.repo }}/${{ inputs.image }}
+          images:  ghcr.io/${{ GITHUB_REPOSITORY_OWNER }}/${{ inputs.image }}
 
 
     - name: 'Get package version and name'
@@ -75,17 +81,17 @@ jobs:
           push: true
           labels: ${{ steps.meta.outputs.labels }}
           tags: |
-              ghcr.io/${{ inputs.repo }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
+              ghcr.io/${{ GITHUB_REPOSITORY_OWNER }}/${{ inputs.image }}:${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
           build-args: | 
                   SFPOWERSCRIPTS_VERSION=${{ env.PKG_VERSION }}
-                  GIT_COMMIT=${{ github.sha}}
+                  GIT_COMMIT=${{ github.sha }}
 
 
    #Tag the image as develop
     - name: 'Tag Docker'
       uses: ./.github/actions/tagDocker
       with:
-         repo: ${{ inputs.repo }}
+         repo: ${{ GITHUB_REPOSITORY_OWNER }}
          image: ${{ inputs.image }}
          existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
          new-tag: ${{ github.ref_name }}
@@ -98,10 +104,10 @@ jobs:
     - name: 'Tag Docker'
       uses: ./.github/actions/tagDocker
       with:
-         repo: ${{ inputs.repo }}
+         repo: ${{ GITHUB_REPOSITORY_OWNER }}
          image: ${{ inputs.image }}
          existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
          new-tag:  ${{ env.RELEASE_NAME }}
          registry: ghcr.io
-         username:   ${{ secrets.username }}
-         token: ${{ secrets.token }}
+         username:   ${{ github.actor }}
+         token: ${{ secrets.GITHUB_TOKEN }}
