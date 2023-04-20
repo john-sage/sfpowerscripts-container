@@ -41,7 +41,7 @@ runs:
      - name: tag image
        shell: bash
        run: |
-         crane auth login ${{ inputs.registry }} --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}
+         crane auth login ${{ inputs.registry }} --username ${{ github.actor }} --password ${{ github.token }}
          crane tag ${{ inputs.registry }}/${{ inputs.repo }}/${{ inputs.image }}:${{ inputs.existing-tag }} ${{ inputs.new-tag }}
 
  
