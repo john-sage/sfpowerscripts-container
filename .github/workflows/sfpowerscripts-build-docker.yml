@@ -10,7 +10,7 @@ on:
     repo:
       type: string
       required: true
-      default: '$GITHUB_REPOSITORY_OWNER'
+      default: john-sage
     image:
       type: string
       required: false
