@@ -97,8 +97,8 @@ jobs:
          existing-tag: ${{ env.PKG_VERSION }}-${{ inputs.suffix-tag }}
          new-tag: ${{ github.ref_name }}
          registry: ghcr.io
-         username:   ${{ secrets.username }}
-         token: ${{ secrets.token }}
+         username:   ${{ github.actor }}
+         token: ${{ secrets.GITHUB_TOKEN }}
 
 
    #Tag the image as develop

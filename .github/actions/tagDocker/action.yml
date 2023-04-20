@@ -5,9 +5,11 @@ inputs:
     repo:
       type: string
       required: true
+      default: john-sage
     image:
       type: string
       required: true
+      default: sfdxcli
     existing-tag:
       type: string
       required: true
@@ -18,12 +20,12 @@ inputs:
       type: string
       required: false
       default: ghcr.io
-    username:
-      type: string
-      required: true
-    token:
-        type: string
-        required: true
+#    username:
+#      type: string
+#      required: true
+#    token:
+#        type: string
+#        required: true
 
 
 runs:
@@ -39,7 +41,7 @@ runs:
      - name: tag image
        shell: bash
        run: |
-         echo "${{ inputs.token }}" | crane auth login ${{ inputs.registry }} --username ${{ inputs.username }} --password-stdin
+         echo "${{ secrets.GITHUB_TOKEN }}" | crane auth login ${{ inputs.registry }} --username ${{ github.actor }} --password-stdin
          crane tag ${{ inputs.registry }}/${{ inputs.repo }}/${{ inputs.image }}:${{ inputs.existing-tag }} ${{ inputs.new-tag }}
 
  
